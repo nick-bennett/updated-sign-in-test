@@ -1,0 +1,5 @@
+<resources>
+  <string name="app_name">Sign In Test</string>
+  <string name="login_failure_message">Unable to sign in with the provided credentials.</string>
+  <string name="sign_out">Sign out</string>
+</resources>
