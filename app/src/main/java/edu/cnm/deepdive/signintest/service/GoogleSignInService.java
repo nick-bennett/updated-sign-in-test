@@ -87,9 +87,7 @@ public class GoogleSignInService {
         .create((emitter) ->
             client
                 .signOut()
-                .addOnSuccessListener((ignored) -> {
-                  emitter.onComplete();
-                })
+                .addOnSuccessListener((ignored) -> emitter.onComplete())
                 .addOnFailureListener(emitter::onError)
         )
         .observeOn(Schedulers.io());

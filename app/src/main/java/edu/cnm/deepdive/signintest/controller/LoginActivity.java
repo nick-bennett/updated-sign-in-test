@@ -18,7 +18,7 @@ public class LoginActivity extends AppCompatActivity {
   private ActivityLoginBinding binding;
   private LoginViewModel viewModel;
   private ActivityResultLauncher<Intent> launcher;
-  private boolean silent = true;
+  private boolean silent;
 
   @SuppressLint("CheckResult")
   @Override
@@ -51,9 +51,11 @@ public class LoginActivity extends AppCompatActivity {
   }
 
   private void informFailure(Throwable throwable) {
-    Snackbar
-        .make(binding.getRoot(), R.string.login_failure_message, Snackbar.LENGTH_LONG)
-        .show();
+    if (throwable != null) {
+      Snackbar
+          .make(binding.getRoot(), R.string.login_failure_message, Snackbar.LENGTH_LONG)
+          .show();
+    }
   }
 
 }
