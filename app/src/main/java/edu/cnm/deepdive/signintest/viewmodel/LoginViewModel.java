@@ -69,8 +69,9 @@ public class LoginViewModel extends AndroidViewModel implements DefaultLifecycle
     pending.add(
         repository
             .signOut()
+            .doFinally(() -> account.postValue(null))
             .subscribe(
-                () -> account.postValue(null),
+                () -> {},
                 this::postThrowable
             )
     );
