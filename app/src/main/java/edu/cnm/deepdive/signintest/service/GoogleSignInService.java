@@ -44,10 +44,6 @@ public class GoogleSignInService {
     return InstanceHolder.INSTANCE;
   }
 
-  private void logAccount(GoogleSignInAccount account) {
-    Log.d(getClass().getName(), (account != null) ? getBearerToken(account) : "(none)");
-  }
-
   public Single<GoogleSignInAccount> refresh() {
     return Single
         .create((SingleEmitter<GoogleSignInAccount> emitter) ->
@@ -65,7 +61,6 @@ public class GoogleSignInService {
   }
 
   public void startSignIn(ActivityResultLauncher<Intent> launcher) {
-    logAccount(null);
     Intent intent = client.getSignInIntent();
     launcher.launch(intent);
   }
@@ -77,6 +72,7 @@ public class GoogleSignInService {
             Task<GoogleSignInAccount> task =
                 GoogleSignIn.getSignedInAccountFromIntent(result.getData());
             GoogleSignInAccount account = task.getResult(ApiException.class);
+            // TODO Remove next line after we start sending authenticated requests to service.
             logAccount(account);
             emitter.onSuccess(account);
           } catch (ApiException e) {
@@ -91,15 +87,17 @@ public class GoogleSignInService {
         .create((emitter) ->
             client
                 .signOut()
-                .addOnCompleteListener((ignored) -> {
-                  logAccount(null);
-                })
                 .addOnSuccessListener((ignored) -> {
                   emitter.onComplete();
                 })
                 .addOnFailureListener(emitter::onError)
         )
         .observeOn(Schedulers.io());
+  }
+
+  private void logAccount(GoogleSignInAccount account) {
+    Log.d(getClass().getName(),
+        (account != null && account.getIdToken() != null) ? getBearerToken(account) : "(none)");
   }
 
   private String getBearerToken(GoogleSignInAccount account) {
