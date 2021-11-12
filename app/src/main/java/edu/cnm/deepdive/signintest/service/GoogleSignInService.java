@@ -11,8 +11,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import edu.cnm.deepdive.signintest.BuildConfig;
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.reactivex.SingleEmitter;
 import io.reactivex.SingleOnSubscribe;
 import io.reactivex.schedulers.Schedulers;
 
@@ -29,7 +31,7 @@ public class GoogleSignInService {
         .requestEmail()
         .requestId()
         .requestProfile()
-        .requestIdToken("684681475272-0jevq9brtk35a85kd13js1pll5e53f9j.apps.googleusercontent.com")
+        .requestIdToken(BuildConfig.CLIENT_ID)
         .build();
     client = GoogleSignIn.getClient(context, options);
   }
@@ -48,7 +50,7 @@ public class GoogleSignInService {
 
   public Single<GoogleSignInAccount> refresh() {
     return Single
-        .create((SingleOnSubscribe<GoogleSignInAccount>) (emitter) ->
+        .create((SingleEmitter<GoogleSignInAccount> emitter) ->
             client.silentSignIn()
                 // TODO Remove next line after we start sending authenticated requests to service.
                 .addOnSuccessListener(this::logAccount)
@@ -70,7 +72,7 @@ public class GoogleSignInService {
 
   public Single<GoogleSignInAccount> completeSignIn(ActivityResult result) {
     return Single
-        .create((SingleOnSubscribe<GoogleSignInAccount>) (emitter) -> {
+        .create((SingleEmitter<GoogleSignInAccount> emitter) -> {
           try {
             Task<GoogleSignInAccount> task =
                 GoogleSignIn.getSignedInAccountFromIntent(result.getData());
@@ -86,15 +88,17 @@ public class GoogleSignInService {
 
   public Completable signOut() {
     return Completable
-        .create((emitter) -> {
-          client
-              .signOut()
-              .addOnCompleteListener((ignored) -> {
-                logAccount(null);
-                emitter.onComplete();
-              })
-              .addOnFailureListener(emitter::onError);
-        })
+        .create((emitter) ->
+            client
+                .signOut()
+                .addOnCompleteListener((ignored) -> {
+                  logAccount(null);
+                })
+                .addOnSuccessListener((ignored) -> {
+                  emitter.onComplete();
+                })
+                .addOnFailureListener(emitter::onError)
+        )
         .observeOn(Schedulers.io());
   }
 
